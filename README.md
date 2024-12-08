@@ -20,6 +20,12 @@ Support          : Facilitate a collaborative community for teachers, parents, a
 Impact
 By combining these technologies, our application seeks to revolutionize the identification and management of learning disabilities, promoting effective learning strategies and increasing educational equity and accessibility for all students.
 ```
+
+### Overall System Diagram
+
+![image alt](https://github.com/sachintha-heshan/Research-project/blob/b4a7720ab5718d611e68bd1d458fb21cfb6beb6b/overall%20diagram.jpg)
+
+
 ### Technologies used
 
 ```
