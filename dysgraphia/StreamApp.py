@@ -10,7 +10,7 @@ from collections import Counter
 model = load_model("handwriting_dysgraphia_model.h5")
 
 # Define class labels
-class_labels = ['High risk for Dysgraphia', 'Low risk for Dysgraphia']
+class_labels = ['This student has High risk for Dysgraphia', 'Low risk for Dysgraphia']
 
 # Function to segment words in an image
 def segment_words(image):
