@@ -38,3 +38,34 @@ def preprocess_image(image_path):
     img_input = np.expand_dims(img_input, axis=0)
 
     return img_input
+@app.route('/predict', methods=['POST'])
+def predict():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file uploaded'}), 400
+
+    file = request.files['file']
+    filename = secure_filename(file.filename)
+    image_path = os.path.join("uploads", filename)
+    os.makedirs("uploads", exist_ok=True)
+    file.save(image_path)
+
+    try:
+        # Preprocess image
+        processed_img = preprocess_image(image_path)
+
+        # Predict
+        prediction = model.predict(processed_img)
+        predicted_index = int(np.argmax(prediction[0]))  # Multi-class prediction
+        predicted_class = class_labels[predicted_index]
+        review = class_reviews[predicted_class]
+
+        return jsonify({
+            'prediction': predicted_class,
+            'review': review
+        })
+
+    except Exception as e:
+        return jsonify({'error': f'Prediction failed: {str(e)}'}), 500
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=5010)
