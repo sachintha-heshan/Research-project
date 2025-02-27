@@ -68,3 +68,31 @@ def segment_words(image_path):
             processed_words.append(word_normalized)
 
     return np.array(processed_words)
+
+@app.route('/predict', methods=['POST'])
+def predict():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file uploaded'}), 400
+    
+    file = request.files['file']
+    filename = secure_filename(file.filename)
+    image_path = os.path.join("uploads", filename)
+    os.makedirs("uploads", exist_ok=True)
+    file.save(image_path)
+
+    # Segment words and process in-memory
+    processed_words = segment_words(image_path)
+
+    if len(processed_words) == 0:
+        return jsonify({'error': 'No valid words detected'}), 400
+
+    # Predict on segmented words
+    predictions = model.predict(processed_words)
+    predicted_classes = [int(np.round(prediction[0])) for prediction in predictions]
+    majority_prediction = Counter(predicted_classes).most_common(1)[0][0]
+    predicted_class_label = class_labels[majority_prediction]
+
+    return jsonify({'prediction': predicted_class_label})
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=5004)
