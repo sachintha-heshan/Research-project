@@ -32,3 +32,39 @@ def segment_words(image_path):
     dilated_line = cv2.dilate(thresh, kernel_line, iterations=1)
     contours_line, _ = cv2.findContours(dilated_line, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
     sorted_lines = sorted(contours_line, key=lambda ctr: cv2.boundingRect(ctr)[1])
+    
+    kernel_word = np.ones((3, 15), np.uint8)
+    dilated_word = cv2.dilate(thresh, kernel_word, iterations=1)
+
+    processed_words = []
+
+    for line in sorted_lines:
+        x, y, w, h = cv2.boundingRect(line)
+        roi_line = dilated_word[y:y + h, x:x + w]
+
+        contours_word, _ = cv2.findContours(roi_line, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        sorted_words = sorted(contours_word, key=lambda c: cv2.boundingRect(c)[0])
+
+        for word in sorted_words:
+            if cv2.contourArea(word) < 400:
+                continue
+
+            x2, y2, w2, h2 = cv2.boundingRect(word)
+            word_img = img[y + y2:y + y2 + h2, x + x2:x + x2 + w2]
+
+            # Convert to grayscale
+            word_gray = cv2.cvtColor(word_img, cv2.COLOR_RGB2GRAY)
+
+            # Auto-invert if needed (if background is dark)
+            mean_intensity = np.mean(word_gray)
+            if mean_intensity < 127:
+                word_gray = cv2.bitwise_not(word_gray)
+
+            # Resize and normalize
+            word_resized = cv2.resize(word_gray, (150, 150))
+            word_normalized = word_resized / 255.0
+            word_normalized = np.expand_dims(word_normalized, axis=-1)
+
+            processed_words.append(word_normalized)
+
+    return np.array(processed_words)
